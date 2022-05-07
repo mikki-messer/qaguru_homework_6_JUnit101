@@ -2,12 +2,10 @@ package com.mikkimesser;
 
 import com.codeborne.selenide.*;
 import com.google.common.base.Strings;
+import com.mikkimesser.domain.Language;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.*;
 
 import java.util.stream.Stream;
 
@@ -100,5 +98,17 @@ public class WebTest {
     @ParameterizedTest(name = "Простой тест с аннотацией Method Source")
     void testMethodSourceExample(String input, boolean expectedResult){
         Assertions.assertEquals(expectedResult, Strings.isNullOrEmpty(input.trim()));
+    }
+
+    @EnumSource(Language.class)
+    @ParameterizedTest(name = "Проверка наличия языка в дропдаунах на главной странице")
+    void testMultitranTranslationParametrizedEnum(Language language){
+        SelenideElement languageFromDropdown = $("#l1");
+        SelenideElement languageToDropdown = $("#l2");
+
+        Selenide.open("https://multitran.ru");
+
+        languageFromDropdown.selectOption(language.name);
+        languageToDropdown.selectOption(language.name);
     }
 }
