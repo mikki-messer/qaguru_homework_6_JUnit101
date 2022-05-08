@@ -3,16 +3,12 @@ package com.mikkimesser;
 import com.codeborne.selenide.*;
 import com.google.common.base.Strings;
 import com.mikkimesser.domain.Language;
+import com.mikkimesser.pages.DictionaryMainPage;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.*;
 
 import java.util.stream.Stream;
-
-import static com.codeborne.selenide.Condition.text;
-import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.$$;
 
 @DisplayName("Веб-тесты с параметрами")
 public class WebTest {
@@ -27,19 +23,15 @@ public class WebTest {
     @DisplayName("Простой тест словаря Multitran")
     @Test
     void testMultitranTranslation(){
-        SelenideElement wordInput = $("#s");
-        SelenideElement languageFromDropdown = $("#l1");
-        SelenideElement languageToDropdown = $("#l2");
-        SelenideElement searchButton = $("input[type='submit']");
-        ElementsCollection resultCells = $$(".trans");
+        DictionaryMainPage dictionaryMainPage = new DictionaryMainPage();
+        String word2translate = "engine";
+        String expectedResult = "локомотив";
+        String languageFrom = "English";
+        String languageTo = "Russian";
 
-        Selenide.open("https://multitran.ru");
-
-        wordInput.setValue("engine");
-        languageFromDropdown.selectOption("English");
-        languageToDropdown.selectOption("Russian");
-        searchButton.click();
-        resultCells.find(Condition.text("локомотив")).shouldBe(visible);
+        dictionaryMainPage.openPage();
+        dictionaryMainPage.translate(word2translate, languageFrom, languageTo);
+        dictionaryMainPage.checkTranslationResult(expectedResult);
     }
 
     @ValueSource(strings = {
@@ -48,19 +40,13 @@ public class WebTest {
     })
     @ParameterizedTest(name = "Проверка перевода в мультитране с английского на русский слова {0}")
     void testMultitranTranslationParametrizedSimple(String testData){
-        SelenideElement wordInput = $("#s");
-        SelenideElement languageFromDropdown = $("#l1");
-        SelenideElement languageToDropdown = $("#l2");
-        SelenideElement searchButton = $("input[type='submit']");
-        SelenideElement resultCell = $(".trans");
+        DictionaryMainPage dictionaryMainPage = new DictionaryMainPage();
+        String languageFrom = "English";
+        String languageTo = "Russian";
 
-        Selenide.open("https://multitran.ru");
-
-        wordInput.setValue(testData);
-        languageFromDropdown.selectOption("English");
-        languageToDropdown.selectOption("Russian");
-        searchButton.click();
-        resultCell.parent().parent().shouldHave(text(testData));
+        dictionaryMainPage.openPage();
+        dictionaryMainPage.translate(testData, languageFrom, languageTo);
+        dictionaryMainPage.checkTranslationResult(testData);
     }
 
     @CsvSource(value = {
@@ -72,20 +58,15 @@ public class WebTest {
     @ParameterizedTest(name = "Перевод в мультитране с английского на русский. Вход {0}, ожидаем {1}")
     void testMultitranTranslationParametrizedComplex(String testData,
                                                      String expectedResult){
-        SelenideElement wordInput = $("#s");
-        SelenideElement languageFromDropdown = $("#l1");
-        SelenideElement languageToDropdown = $("#l2");
-        SelenideElement searchButton = $("input[type='submit']");
-        ElementsCollection resultCells = $$(".trans");
+        DictionaryMainPage dictionaryMainPage = new DictionaryMainPage();
+        String languageFrom = "English";
+        String languageTo = "Russian";
 
-        Selenide.open("https://multitran.ru");
-
-        wordInput.setValue(testData);
-        languageFromDropdown.selectOption("English");
-        languageToDropdown.selectOption("Russian");
-        searchButton.click();
-        resultCells.find(Condition.text(expectedResult)).shouldBe(visible);
+        dictionaryMainPage.openPage();
+        dictionaryMainPage.translate(testData, languageFrom, languageTo);
+        dictionaryMainPage.checkTranslationResult(expectedResult);
     }
+
     static Stream<Arguments> testMethodSourceExampleProvider() {
         return Stream.of(
                     Arguments.of(" ", true),
@@ -95,7 +76,7 @@ public class WebTest {
     }
 
     @MethodSource("testMethodSourceExampleProvider")
-    @ParameterizedTest(name = "Простой тест с аннотацией Method Source")
+    @ParameterizedTest(name = "Простой тест с аннотацией Method Source, вход:\"{0}\", ожидаем {1}")
     void testMethodSourceExample(String input, boolean expectedResult){
         Assertions.assertEquals(expectedResult, Strings.isNullOrEmpty(input.trim()));
     }
@@ -103,12 +84,11 @@ public class WebTest {
     @EnumSource(Language.class)
     @ParameterizedTest(name = "Проверка наличия языка в дропдаунах на главной странице")
     void testMultitranTranslationParametrizedEnum(Language language){
-        SelenideElement languageFromDropdown = $("#l1");
-        SelenideElement languageToDropdown = $("#l2");
+        DictionaryMainPage dictionaryMainPage = new DictionaryMainPage();
 
-        Selenide.open("https://multitran.ru");
-
-        languageFromDropdown.selectOption(language.name);
-        languageToDropdown.selectOption(language.name);
+        dictionaryMainPage.openPage();
+        System.out.println(language.name());
+        dictionaryMainPage.setLanguageFrom(language.name());
+        dictionaryMainPage.setLanguageTo(language.name());
     }
 }
